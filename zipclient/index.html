@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Zipcode Searchtatus</title>
+</head>
+<body>
+
+    <form>
+        City: <input type="text" name="city">
+        <input type="submit" value="Submit">
+    </form>
+    
+    <script type="text/javascript">
+
+        fetch("http://localhost:8000/zips/city/boulder")
+            .then(function(response) {
+                return response.json()
+            })
+            .then(function(data) {
+                console.log(data)
+            })
+            .catch(function(err){
+            console.log(err)
+        })
+
+    </script>
+
+    <h1>Results:</h1>
+    <ul>
+        <li></li>
+    </ul>
+
+
+</body>
+</html>
