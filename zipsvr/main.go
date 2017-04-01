@@ -164,4 +164,3 @@ func main() {
 	//and error, which we will log using log.Fatal().
 	log.Fatal(http.ListenAndServe(addr, nil))
 }
->>>>>>> ed0c8c6259bee41e4cd88be640a900515285ce27
