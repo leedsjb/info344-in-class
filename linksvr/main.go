@@ -1,10 +1,15 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
+	"time"
+
+	"github.com/go-redis/redis"
 
 	"strings"
 
@@ -18,8 +23,8 @@ const contentTypeJSON = "application/json; charset=utf-8"
 
 //PageSummary contains summary information about a web page
 type PageSummary struct {
-	Title string   `json:"title"`
-	Links []string `json:"links"`
+	Title string   `json:"title"` //page title
+	Links []string `json:"links"` //slice of page URLs
 }
 
 //getPageSummary fetches PageSummary info for a given URL
@@ -68,17 +73,46 @@ func getPageSummary(URL string) (*PageSummary, error) {
 	} //for each token
 } //getPageSummary()
 
+type HandlerContext struct { // context struct contains all fields needed
+	redisClient *redis.Client
+}
+
 //SummaryHandler handles the /v1/summary resource
-func SummaryHandler(w http.ResponseWriter, r *http.Request) {
+func (ctx *HandlerContext) SummaryHandler(w http.ResponseWriter, r *http.Request) { // (ctx *HandlerContext) is a receiver type, gives access to vars in function
 	URL := r.FormValue("url")
 	if len(URL) == 0 {
 		http.Error(w, "please supply a `url` query string parameter", http.StatusBadRequest)
 		return
 	}
 
-	//TODO: call getPageSummary() passing URL
-	//marshal struct into JSON, and write it
-	//to the response
+	jbuf, err := ctx.redisClient.Get(URL).Bytes()
+	if err != nil && err != redis.Nil { // redis.Nil appears when you look up a key and it's not found
+		http.Error(w, "error getting from cache: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if err == redis.Nil {
+		//TODO: call getPageSummary() passing URL
+		//marshal struct into JSON, and write it
+		//to the response
+
+		pgsum, err := getPageSummary(URL)
+		if err != nil && err != io.EOF {
+			http.Error(w, "Error retrieving page summary: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		jbuf, err := json.Marshal(pgsum)
+		if err != nil {
+			http.Error(w, "Error marshaling JSON: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		ctx.redisClient.Set(URL, jbuf, time.Second*60) // save for one minute
+	}
+
+	w.Header().Add(headerContentType, contentTypeJSON)
+	w.Write(jbuf)
 }
 
 func main() {
@@ -89,7 +123,16 @@ func main() {
 	}
 	addr := host + ":" + port
 
-	http.HandleFunc("/v1/summary", SummaryHandler)
+	ropts := redis.Options{
+		Addr: "localhost:6379",
+	}
+
+	rclient := redis.NewClient(&ropts) // ampersand retrieves address of the following variable
+	hctx := &HandlerContext{           // create struct and retrieve address on heap
+		redisClient: rclient,
+	}
+
+	http.HandleFunc("/v1/summary", hctx.SummaryHandler) // makes HandlerContext available to SummaryHandler
 
 	fmt.Printf("listening at %s...\n", addr)
 	log.Fatal(http.ListenAndServe(addr, nil))
