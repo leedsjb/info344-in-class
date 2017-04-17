@@ -6,8 +6,9 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/info344-s17/in-class/tasksvr/handlers"
-	"github.com/info344-s17/in-class/tasksvr/models/tasks"
+	"github.com/leedsjb/info344-in-class/tasksvr/handlers"
+	"github.com/leedsjb/info344-in-class/tasksvr/models/tasks"
+
 	"gopkg.in/mgo.v2"
 )
 
@@ -42,7 +43,7 @@ func main() {
 	}
 
 	//add handlers
-	http.HandleFunc("/v1/tasks", hctx.HandleTasks)
+	http.HandleFunc("/v1/tasks", hctx.HandleTasks) // register function to URL
 	http.HandleFunc("/v1/tasks/", hctx.HandleSpecificTask)
 
 	fmt.Printf("listening at %s...\n", addr)
