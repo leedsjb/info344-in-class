@@ -9,4 +9,10 @@ type Store interface {
 	//GetID retrieves a new task and
 	//returns the fully-populated Task or an error
 	Get(ID interface{}) (*Task, error)
+
+	//Get all tasks
+	GetAll() ([]*Task, error)
+
+	//
+	Update(task *Task) error
 }
