@@ -15,8 +15,7 @@ usage:
 `
 
 func main() {
-	if len(os.Args) < 4 ||
-		(os.Args[1] != "sign" && os.Args[1] != "verify") {
+	if len(os.Args) < 4 || (os.Args[1] != "sign" && os.Args[1] != "verify") {
 		fmt.Println(usage)
 		os.Exit(1)
 	}
@@ -29,9 +28,9 @@ func main() {
 
 	case "sign": // go automatically breaks at the end of a case as opposed to "falling through"
 
-		v := []byte(value)
+		v := []byte(value) // create a byte slice of the value to be signed (underlying array automatically created)
 
-		h := hmac.New(sha256.New, []byte(key)) // creates byte slice from string, key
+		h := hmac.New(sha256.New, []byte(key)) // creates byte slice from string, key and creates hash using sha256
 		h.Write(v)
 		sig := h.Sum(nil)
 		// fmt.Println(sig)
