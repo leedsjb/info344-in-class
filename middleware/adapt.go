@@ -18,3 +18,12 @@ type Adapter func(http.Handler) http.Handler
 //reverse order, passing the `handler` to
 //each, and resetting `handler` to the
 //handler returned from the Adapter func
+
+// Adapt Adapter function
+func Adapt(handler http.Handler, adapters ...Adapter) /*can name return here*/ http.Handler { // variadic argument, one or many Adapters can be passed in
+	for i := len(adapters) - 1; i >= 0; i-- {
+		handler = adapters[i](handler) // passing the handler to each??
+	}
+	// could also return here regularly, but ABT names the return type so the return is not needed
+	return handler
+}
