@@ -36,6 +36,13 @@ func main() {
 	//and run a bunch of getter/setter
 	//goroutines
 
+	nc := NewCache()
+
+	for i := 0; i < 10; i++ {
+		go getter(nc)
+		go setter(nc)
+	}
+
 	//A go program will exit when
 	//the main() exits, and the
 	//getter/setter functions are
@@ -49,4 +56,5 @@ func main() {
 	fmt.Println("hit ctrl+c to quit")
 	quit := make(chan bool)
 	<-quit
+
 }
