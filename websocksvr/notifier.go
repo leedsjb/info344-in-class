@@ -64,11 +64,11 @@ func (n *Notifier) AddClient(client *websocket.Conn) {
 	n.mu.Lock() // use mutex write lock to ensure map is safe for concurrent use
 	defer n.mu.Unlock()
 
-	clientEntry := n.clients[client]
-	if clientEntry == false { // go maps return the "0" value of values that don't exist at a given key
+	_, clientInMap := n.clients[client] // determine if client is in map already
+	if !clientInMap {                   // note: go maps return the "0" value of values that don't exist at a given key
 		n.clients[client] = true
 	}
-
+	go n.readPump(client) // start goRoutine
 }
 
 //Notify will add a new event to the event queue
@@ -120,4 +120,6 @@ func (n *Notifier) broadcast(event interface{}) {
 	//the client has wandered off, so you should call
 	//the `.Close()` method on the client, and delete
 	//it from the n.clients map
+
+	return
 }
