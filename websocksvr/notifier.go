@@ -68,7 +68,14 @@ func (n *Notifier) AddClient(client *websocket.Conn) {
 	if !clientInMap {                   // note: go maps return the "0" value of values that don't exist at a given key
 		n.clients[client] = true
 	}
+
+	//after you add the client to the map,
+	//call n.readPump() on its own goroutine
+	//to proces all of the control messages sent
+	//by the client to the server.
+	//see https://godoc.org/github.com/gorilla/websocket#hdr-Control_Messages
 	go n.readPump(client) // start goRoutine
+
 }
 
 //Notify will add a new event to the event queue
