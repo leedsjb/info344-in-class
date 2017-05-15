@@ -1,4 +1,5 @@
 .DS_Store
+# prevents Node dependency source files from being tracked in repository
 node_modules
 .vscode
 .idea
