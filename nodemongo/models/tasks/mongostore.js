@@ -1,3 +1,9 @@
+/** 
+ * mongostore.js
+ * Created May 17, 2017 from Dr. Dave Stearns
+ * Modified: 
+*/
+
 "use strict";
 
 const mongodb = require('mongodb'); //for mongodb.ObjectID()
@@ -18,7 +24,7 @@ class MongoStore {
      * getAll returns all tasks in the store
      */
     getAll() {
-        //TODO: implement this
+        return this.collection.find().toArray() // creates and populates array simultaneously
     }
 
     /**
@@ -26,7 +32,7 @@ class MongoStore {
      * @param {Task} task 
      */
     insert(task) {
-        //TODO: implement this
+        return this.collection.insert(task) // automatically checks and corrects for _id field mongo needs
     }
 
     /**
@@ -34,8 +40,17 @@ class MongoStore {
      * @param {string} id 
      * @param {bool} complete 
      */
-    async setComplete(id, complete) {
-        //TODO: implement this
+    async setComplete(id, complete) { // ** note async, v. 7.10.0 and up only
+
+        let options = {returnOriginal: false};
+        let updates = {$set: {complete: complete}};
+
+        let oid = new mongodb.ObjectID(id);
+
+        let result = await this.collection.findOneAndUpdate({_id: oid},updates, options);
+
+        return result.value;
+
     }
 
     /**
@@ -43,7 +58,7 @@ class MongoStore {
      * @param {string} id 
      */
     delete(id) {
-        //TODO: implement this
+        return this.collection.deleteOne({_id: new mongodb.ObjectID(id)});
     }
 }
 
